@@ -437,7 +437,7 @@ class NameCoref:
 		return refs
 
 if __name__ == "__main__":
-	ref = importlib_resources.files('data') / 'aliases.txt'
+	ref = importlib_resources.files('booknlp.english.data') / 'aliases.txt'
 	with importlib_resources.as_file(ref) as path:
 		resolver = NameCoref(path)
 

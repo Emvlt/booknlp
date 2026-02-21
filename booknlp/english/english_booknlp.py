@@ -118,14 +118,15 @@ class EnglishBookNLP:
 				elif pipe == "quote":
 					self.doQuoteAttrib=True
 
-			ref = importlib_resources.files('data') / 'entity_cat.tagset'
+
+			ref = importlib_resources.files('booknlp.english.data') / 'entity_cat.tagset'
 			with importlib_resources.as_file(ref) as path:
 				tagsetPath = path
 
 			if "referential_gender_hyperparameterFile" in model_params:
 				self.gender_hyperparameterFile = model_params["referential_gender_hyperparameterFile"]
 			else:
-				gender_file_path = importlib_resources.files('data') / 'gutenberg_prop_gender_terms.txt'
+				gender_file_path = importlib_resources.files('booknlp.english.data') / 'gutenberg_prop_gender_terms.txt'
 				with importlib_resources.as_file(gender_file_path) as path:
 					self.gender_hyperparameterFile = path
 			
@@ -150,7 +151,7 @@ class EnglishBookNLP:
 
 			if self.doEntities:
 				self.entityTagger=LitBankEntityTagger(self.entityPath, tagsetPath)
-				ref = importlib_resources.files('data') / 'aliases.txt'
+				ref = importlib_resources.files('./data') / 'aliases.txt'
 				with importlib_resources.as_file(ref) as path:
 					self.name_resolver=NameCoref(path)
 

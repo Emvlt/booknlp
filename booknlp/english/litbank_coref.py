@@ -15,7 +15,10 @@ class LitBankCoref:
 		base_model=re.sub(".model", "", base_model)
 
 		self.model = BERTCorefTagger(gender_cats=gender_cats, freeze_bert=True, base_model=base_model, pronominalCorefOnly=pronominalCorefOnly)
-		self.model.load_state_dict(torch.load(modelFile, map_location=device))
+		state_dict = torch.load(modelFile, map_location=device)
+		# Filter out unexpected keys
+		state_dict = {k: v for k, v in state_dict.items() if not k.startswith('bert.embeddings.position_ids')}
+		self.model.load_state_dict(state_dict)		
 		self.model.to(device)
 		self.model.eval()
 
@@ -42,7 +45,7 @@ class LitBankCoref:
 		
 		assignments=self.model.forward(test_matrix, test_index, existing=refs, token_positions=test_token_positions, starts=test_starts, ends=test_ends, widths=test_widths, input_ids=test_data, attention_mask=test_masks, transforms=test_transforms, ref_genders=ref_gender, entities=global_entities)
 		
-		ref = importlib_resources.files('data') / 'aliases.txt'
+		ref = importlib_resources.files('booknlp.english.data') / 'aliases.txt'
 		with importlib_resources.as_file(ref) as path:
 			nameCoref = NameCoref(path)
 

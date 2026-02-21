@@ -10,7 +10,7 @@ class LitBankEntityTagger:
 
 		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 		self.tagset=sequence_layered_reader.read_tagset(model_tagset)
-		ref = importlib_resources.files('data') / 'supersense.tagset'
+		ref = importlib_resources.files('booknlp.english.data') / 'supersense.tagset'
 		with importlib_resources.as_file(ref) as path:
 			self.supersense_tagset=sequence_layered_reader.read_tagset(path)
     
@@ -20,8 +20,11 @@ class LitBankEntityTagger:
 		self.model = Tagger(freeze_bert=False, base_model=base_model, tagset_flat={"EVENT":1, "O":1}, supersense_tagset=self.supersense_tagset, tagset=self.tagset, device=device)
 
 		self.model.to(device)
-		self.model.load_state_dict(torch.load(model_file, map_location=device))
-		ref = importlib_resources.files('data') / 'wordnet.first.sense'
+		state_dict = torch.load(model_file, map_location=device)
+		# Filter out unexpected keys
+		state_dict = {k: v for k, v in state_dict.items() if not k.startswith('bert.embeddings.position_ids')}
+		self.model.load_state_dict(state_dict)
+		ref = importlib_resources.files('booknlp.english.data') / 'wordnet.first.sense'
 		with importlib_resources.as_file(ref) as path:
 			self.wns=self.read_wn(path)
 
