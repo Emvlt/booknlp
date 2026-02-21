@@ -1,23 +1,16 @@
 import re
-import os
-from collections import Counter
 import sys
-import argparse
+
 
 from transformers import BertModel
 from transformers import BertTokenizer
 
 import torch
 from torch import nn
-import torch.optim as optim
 import numpy as np
 import random
 
 from booknlp.common.pipelines import Token, Entity
-from booknlp.english.litbank_quote import QuoteTagger
-from booknlp.english.name_coref import NameCoref
-
-from booknlp.english.bert_qa import QuotationAttribution
 
 random.seed(1)
 np.random.seed(1)

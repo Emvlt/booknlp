@@ -24,8 +24,6 @@ from os.path import isfile
 import os
 from booknlp.common.pipelines import Token
 
-import random
-
 class GenderEM:
 
 	def __init__(self, outfile=None, tokens=None, entities=None, entityFiles=None, tokenFiles=None, hyperparameterFile=None, distance=25, num_epochs=25, refs=None, upper=10, use_tagged_pronouns_only=True, genders=[["he", "him", "his"],["she", "her"],	["they", "them", "their"]] ):
@@ -576,7 +574,7 @@ if __name__ == "__main__":
 	ent_files=[]
 	tok_files=[]
 	for idd in (onlyfiles[:num]):
-		entitiyFile=os.path.join(top, idd, "%s.entities" % idd)
+		entityFile=os.path.join(top, idd, "%s.entities" % idd)
 		tokensFile=os.path.join(top, idd, "%s.tokens" % idd)
 		if isfile(entityFile) and isfile(tokensFile):
 			ent_files.append(entityFile)

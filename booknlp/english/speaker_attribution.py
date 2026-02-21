@@ -1,17 +1,9 @@
-import sys
 import re
-import random
-from random import shuffle
-from math import sqrt, exp, isnan
 from transformers import BertTokenizer, BertModel
 import torch.nn as nn
 import torch
 import numpy as np
-import argparse
-import json
 from booknlp.common.b3 import b3
-
-from collections import Counter
 
 PINK = '\033[95m'
 ENDC = '\033[0m'
@@ -29,13 +21,10 @@ class BERTSpeakerID(nn.Module):
 		modelName=re.sub("-v\d.*$", "", modelName)
 		matcher=re.search(".*-(\d+)_H-(\d+)_A-.*", modelName)
 		bert_dim=0
-		modelSize=0
 		self.num_layers=0
 		if matcher is not None:
 			bert_dim=int(matcher.group(2))
 			self.num_layers=min(4, int(matcher.group(1)))
-
-			modelSize=self.num_layers*bert_dim
 
 		assert bert_dim != 0
 

@@ -1,5 +1,3 @@
-import sys
-import numpy as np
 
 def get_accuracy(golds, preds, tagset):
 	cor=0.

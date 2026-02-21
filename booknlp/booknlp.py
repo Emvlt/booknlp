@@ -2,8 +2,7 @@ import sys
 import argparse
 from transformers import logging
 logging.set_verbosity_error()
-from pathlib import Path
-import os
+
 from booknlp.english.english_booknlp import EnglishBookNLP
 
 class BookNLP():
