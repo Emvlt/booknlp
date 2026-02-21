@@ -3,7 +3,7 @@ import torch, sys, re
 from booknlp.english.bert_coref_quote_pronouns import BERTCorefTagger
 from booknlp.common.pipelines import Entity
 from booknlp.english.name_coref import NameCoref
-import pkg_resources
+import importlib.resources as importlib_resources
 
 class LitBankCoref:
 
@@ -42,9 +42,9 @@ class LitBankCoref:
 		
 		assignments=self.model.forward(test_matrix, test_index, existing=refs, token_positions=test_token_positions, starts=test_starts, ends=test_ends, widths=test_widths, input_ids=test_data, attention_mask=test_masks, transforms=test_transforms, ref_genders=ref_gender, entities=global_entities)
 		
-		aliasFile = pkg_resources.resource_filename(__name__, "data/aliases.txt")
-
-		nameCoref=NameCoref(aliasFile)
+		ref = importlib_resources.files('data') / 'aliases.txt'
+		with importlib_resources.as_file(ref) as path:
+			nameCoref = NameCoref(path)
 
 		e_list=[]
 		for ent in global_entities:
