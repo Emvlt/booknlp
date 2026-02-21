@@ -3,16 +3,17 @@ import torch
 import re
 import booknlp.common.layered_reader as layered_reader
 import booknlp.common.sequence_layered_reader as sequence_layered_reader
-import pkg_resources
+import importlib.resources as importlib_resources
 
 class LitBankEntityTagger:
 	def __init__(self, model_file, model_tagset):
 
 		device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 		self.tagset=sequence_layered_reader.read_tagset(model_tagset)
-		supersenseTagset = pkg_resources.resource_filename(__name__, "data/supersense.tagset")
-
-		self.supersense_tagset=sequence_layered_reader.read_tagset(supersenseTagset)
+		ref = importlib_resources.files('data') / 'supersense.tagset'
+		with importlib_resources.as_file(ref) as path:
+			self.supersense_tagset=sequence_layered_reader.read_tagset(path)
+    
 		base_model=re.sub("google_bert", "google/bert", model_file.split("/")[-1])
 		base_model=re.sub(".model", "", base_model)
 
@@ -20,8 +21,9 @@ class LitBankEntityTagger:
 
 		self.model.to(device)
 		self.model.load_state_dict(torch.load(model_file, map_location=device))
-		wnsFile = pkg_resources.resource_filename(__name__, "data/wordnet.first.sense")
-		self.wns=self.read_wn(wnsFile)
+		ref = importlib_resources.files('data') / 'wordnet.first.sense'
+		with importlib_resources.as_file(ref) as path:
+			self.wns=self.read_wn(path)
 
 	def read_wn(self, filename):
 		wns={}

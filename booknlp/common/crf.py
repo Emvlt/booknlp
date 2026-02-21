@@ -7,7 +7,6 @@ MIT License
 import torch
 import torch.nn as nn
 import torch.nn.init as I
-import torch.nn.utils.rnn as R
 from torch.autograd import Variable
 
 def log_sum_exp(vec, dim=0):
