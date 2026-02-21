@@ -32,9 +32,11 @@ class EnglishBookNLP:
 			spacy_model="en_core_web_sm"
 			if "spacy_model" in model_params:
 				spacy_model=model_params["spacy_model"]
-
-			spacy_nlp = spacy.load(spacy_model, disable=["ner"])
-
+			
+			try:
+				spacy_nlp = spacy.load(spacy_model, disable=["ner"])
+			except OSError:
+				raise OSError(f"You are trying to load the model {spacy_model}, but it is not installed. Please run \n python -m spacy download en_core_web_sm")
 			valid_keys=set("entity,event,supersense,quote,coref".split(","))
 			
 			pipes=model_params["pipeline"].split(",")
