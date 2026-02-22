@@ -57,7 +57,7 @@ class EnglishBookNLP:
                 )
             valid_keys = set("entity,event,supersense,quote,coref".split(","))
 
-            pipes = pipeline
+            pipes = pipeline.split(",")
 
             self.gender_cats = referential_gender_cats
 
