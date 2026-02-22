@@ -19,20 +19,35 @@ import urllib.request
 import importlib.resources as importlib_resources
 import torch
 
+DEFAULT_GENDER_CATS = [
+	["he", "him", "his"],
+	["she", "her"],
+	["they", "them", "their"],
+	["xe", "xem", "xyr", "xir"],
+	["ze", "zem", "zir", "hir"],
+]
 
 class EnglishBookNLP:
 
-    def __init__(self, model_params):
+    def __init__(
+        self,
+        model_type = 'big',
+        pipeline = 'entity,quote,supersense,event,coref',
+        spacy_model = "en_core_web_sm",
+        referential_gender_cats = DEFAULT_GENDER_CATS,
+        models_path = 'models',
+        pronomial_COREF_only = True,
+        **kwargs
+        ):
 
         with torch.no_grad():
 
             start_time = time.time()
-
-            print(model_params)
-
-            spacy_model = "en_core_web_sm"
-            if "spacy_model" in model_params:
-                spacy_model = model_params["spacy_model"]
+            
+            print(f'Instanciating model:')
+            print(f'\t pipeline   : {pipeline}')
+            print(f'\t spacy_model: {spacy_model}')
+            print(f'\t pipeline: {pipeline}')
 
             try:
                 spacy_nlp = spacy.load(spacy_model, disable=["ner"])
@@ -42,35 +57,20 @@ class EnglishBookNLP:
                 )
             valid_keys = set("entity,event,supersense,quote,coref".split(","))
 
-            pipes = model_params["pipeline"].split(",")
+            pipes = pipeline
 
-            self.gender_cats = [
-                ["he", "him", "his"],
-                ["she", "her"],
-                ["they", "them", "their"],
-                ["xe", "xem", "xyr", "xir"],
-                ["ze", "zem", "zir", "hir"],
-            ]
+            self.gender_cats = referential_gender_cats
 
-            if "referential_gender_cats" in model_params:
-                self.gender_cats = model_params["referential_gender_cats"]
+            models_path = Path(models_path)
 
-            home = str(Path.home())
-            modelPath = os.path.join(home, "booknlp_models")
-            if "model_path" in model_params:
-                modelPath = model_params["model_path"]
-
-            if not Path(modelPath).is_dir():
-                Path(modelPath).mkdir(parents=True, exist_ok=True)
-
-            if model_params["model"] == "big":
+            if model_type == "big":
                 entityName = "entities_google_bert_uncased_L-6_H-768_A-12-v1.0.model"
                 corefName = "coref_google_bert_uncased_L-12_H-768_A-12-v1.0.model"
                 quoteAttribName = (
                     "speaker_google_bert_uncased_L-12_H-768_A-12-v1.0.1.model"
                 )
 
-                self.entityPath = os.path.join(modelPath, entityName)
+                self.entityPath = os.path.join(models_path, entityName)
                 if not Path(self.entityPath).is_file():
                     print("downloading %s" % entityName)
                     urllib.request.urlretrieve(
@@ -79,7 +79,7 @@ class EnglishBookNLP:
                         self.entityPath,
                     )
 
-                self.coref_model = os.path.join(modelPath, corefName)
+                self.coref_model = os.path.join(models_path, corefName)
                 if not Path(self.coref_model).is_file():
                     print("downloading %s" % corefName)
                     urllib.request.urlretrieve(
@@ -88,7 +88,7 @@ class EnglishBookNLP:
                         self.coref_model,
                     )
 
-                self.quoteAttribModel = os.path.join(modelPath, quoteAttribName)
+                self.quoteAttribModel = os.path.join(models_path, quoteAttribName)
                 if not Path(self.quoteAttribModel).is_file():
                     print("downloading %s" % quoteAttribName)
                     urllib.request.urlretrieve(
@@ -97,14 +97,14 @@ class EnglishBookNLP:
                         self.quoteAttribModel,
                     )
 
-            elif model_params["model"] == "small":
+            elif model_type == "small":
                 entityName = "entities_google_bert_uncased_L-4_H-256_A-4-v1.0.model"
                 corefName = "coref_google_bert_uncased_L-2_H-256_A-4-v1.0.model"
                 quoteAttribName = (
                     "speaker_google_bert_uncased_L-8_H-256_A-4-v1.0.1.model"
                 )
 
-                self.entityPath = os.path.join(modelPath, entityName)
+                self.entityPath = os.path.join(models_path, entityName)
                 if not Path(self.entityPath).is_file():
                     print("downloading %s" % entityName)
                     urllib.request.urlretrieve(
@@ -113,7 +113,7 @@ class EnglishBookNLP:
                         self.entityPath,
                     )
 
-                self.coref_model = os.path.join(modelPath, corefName)
+                self.coref_model = os.path.join(models_path, corefName)
                 if not Path(self.coref_model).is_file():
                     print("downloading %s" % corefName)
                     urllib.request.urlretrieve(
@@ -122,7 +122,7 @@ class EnglishBookNLP:
                         self.coref_model,
                     )
 
-                self.quoteAttribModel = os.path.join(modelPath, quoteAttribName)
+                self.quoteAttribModel = os.path.join(models_path, quoteAttribName)
                 if not Path(self.quoteAttribModel).is_file():
                     print("downloading %s" % quoteAttribName)
                     urllib.request.urlretrieve(
@@ -131,10 +131,11 @@ class EnglishBookNLP:
                         self.quoteAttribModel,
                     )
 
-            elif model_params["model"] == "custom":
-                self.entityPath = model_params["entity_model_path"]
-                self.coref_model = model_params["coref_model_path"]
-                self.quoteAttribModel = model_params["quote_attribution_model_path"]
+            elif model_type == "custom":
+                custom_model_dict = kwargs.pop('custom_model_dict')
+                self.entityPath = custom_model_dict["entity_model_path"]
+                self.coref_model = custom_model_dict["coref_model_path"]
+                self.quoteAttribModel = custom_model_dict["quote_attribution_model_path"]
 
             self.doEntities = self.doCoref = self.doQuoteAttrib = self.doSS = (
                 self.doEvent
@@ -161,22 +162,13 @@ class EnglishBookNLP:
             with importlib_resources.as_file(ref) as path:
                 tagsetPath = path
 
-            if "referential_gender_hyperparameterFile" in model_params:
-                self.gender_hyperparameterFile = model_params[
-                    "referential_gender_hyperparameterFile"
-                ]
-            else:
-                gender_file_path = (
-                    importlib_resources.files("booknlp.english.data")
-                    / "gutenberg_prop_gender_terms.txt"
-                )
-                with importlib_resources.as_file(gender_file_path) as path:
-                    self.gender_hyperparameterFile = path
-
-            pronominalCorefOnly = True
-
-            if "pronominalCorefOnly" in model_params:
-                pronominalCorefOnly = model_params["pronominalCorefOnly"]
+            
+            gender_file_path = (
+                importlib_resources.files("booknlp.english.data")
+                / "gutenberg_prop_gender_terms.txt"
+            )
+            with importlib_resources.as_file(gender_file_path) as path:
+                self.gender_hyperparameterFile = path
 
             if not self.doEntities and self.doCoref:
                 print("coref requires entity tagging")
@@ -204,13 +196,13 @@ class EnglishBookNLP:
                 self.litbank_coref = LitBankCoref(
                     self.coref_model,
                     self.gender_cats,
-                    pronominalCorefOnly=pronominalCorefOnly,
+                    pronomial_COREF_only=pronomial_COREF_only,
                 )
 
             self.tagger = SpacyPipeline(spacy_nlp)
 
             print("--- startup: %.3f seconds ---" % (time.time() - start_time))
-
+            
     def get_syntax(self, tokens, entities, assignments, genders):
 
         def check_conj(tok, tokens):
