@@ -151,7 +151,7 @@ class EnglishBookNLP:
 
 			if self.doEntities:
 				self.entityTagger=LitBankEntityTagger(self.entityPath, tagsetPath)
-				ref = importlib_resources.files('./data') / 'aliases.txt'
+				ref = importlib_resources.files('booknlp.english.data') / 'aliases.txt'
 				with importlib_resources.as_file(ref) as path:
 					self.name_resolver=NameCoref(path)
 
